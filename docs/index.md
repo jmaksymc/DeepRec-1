@@ -23,6 +23,7 @@ Compile-And-Install
 
 Embedding-Variable
 Feature-Eviction
+Feature-Filter
 Dynamic-dimension-Embedding-Variable
 Adaptive-Embedding
 Multi-Hash-Variable
@@ -43,13 +44,16 @@ StarServer
 Auto-Micro-Batch
 Fused-Embedding
 Smart-Stage
+Auto-Fusion
 ```
 
 ```{toctree}
 :maxdepth: 2
 :caption: Runtime优化
 
-TensorPoolAllocator
+CPU-Memory-Optimization
+GPU-Memory-Optimization
+GPU-Virtual-Memory
 ```
 
 ```{toctree}
@@ -71,6 +75,7 @@ AdagradDecay-Optimizer
 :maxdepth: 2
 :caption: 算子及硬件加速
 
+Operator-Optimization
 NVIDIA-TF32
 oneDNN
 ```
@@ -80,4 +85,5 @@ oneDNN
 :caption: 样本读取及Dataset
 
 WorkQueue
+KafkaDataset
 ```
