@@ -7539,6 +7539,30 @@ tf_cc_test_mkl(
 )
 
 tf_cc_test_mkl(
+    name = "mkl_input_conversion_op_test",
+    size = "small",
+    srcs = ["mkl_input_conversion_op_test.cc"],
+    deps = [
+        ":mkl_input_conversion_op",
+        ":ops_testutil",
+        ":ops_util",
+        "//tensorflow/core:tensorflow",
+        "//tensorflow/cc:cc_ops",
+        "//tensorflow/cc:cc_ops_internal",
+        "//tensorflow/core:core_cpu",
+        "//tensorflow/core:core_cpu_internal",
+        "//tensorflow/core:framework",
+        "//tensorflow/core:framework_internal",
+        "//tensorflow/core:lib",
+        "//tensorflow/core:protos_all_cc",
+        "//tensorflow/core:test",
+        "//tensorflow/core:test_main",
+        "//tensorflow/core:testlib",
+        "//third_party/eigen3",
+    ],
+)
+
+tf_cc_test_mkl(
     name = "mkl_quantized_conv_ops_test",
     size = "small",
     srcs = ["mkl_quantized_conv_ops_test.cc"],
