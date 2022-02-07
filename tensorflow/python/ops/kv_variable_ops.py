@@ -260,6 +260,7 @@ class EmbeddingVariable(resource_variable_ops.ResourceVariable):
     self._primary = evconfig.primary
     self._ht_type = evconfig.ht_type
     self._ht_partition_num = ht_partition_num
+    self._is_sparse=False
     if evconfig.filter_strategy != None:
       if isinstance(evconfig.filter_strategy, variables.CounterFilter):
         self._filter_freq = evconfig.filter_strategy.filter_freq
@@ -279,6 +280,7 @@ class EmbeddingVariable(resource_variable_ops.ResourceVariable):
       
     self._l2_weight_threshold = evconfig.l2_weight_threshold
     self._storage_type = evconfig.storage_type
+    self._storage_path = evconfig.storage_path
     self._default_value_dim = evconfig.default_value_dim
     if self._steps_to_live is 0 and self._filter_freq is 0 and self._l2_weight_threshold == -1.0:
       self._layout = "light"
@@ -388,6 +390,7 @@ class EmbeddingVariable(resource_variable_ops.ResourceVariable):
                     max_freq = 99999,
                     layout = self._layout,
                     storage_type = self._storage_type,
+                    storage_path = self._storage_path,
                     default_value_dim = self._default_value_dim,
                     name=n))
         self._graph_element = self._handle
@@ -445,6 +448,7 @@ class EmbeddingVariable(resource_variable_ops.ResourceVariable):
     self._invalid_key_type = dtypes.as_dtype(self._handle.op.get_attr("Tkeys"))
     self._graph_element = self._handle
     self._constraint = None
+    self._is_sparse=False
   # LINT.ThenChange(//tensorflow/python/eager/graph_callable.py)
 
   def set_init_data_source_initializer(self, init_data_source):
