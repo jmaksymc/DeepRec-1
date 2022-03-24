@@ -8,3 +8,4 @@ Contained models are as follow:
 - [DIEN](DIEN/README.md)
 - [DIN](DIN/README.md)
 - [DeepFM](DeepFM/README.md)
+- [MMoE](MMoE/README.md)
