@@ -159,7 +159,7 @@ class MMOE():
     
     def _make_scope(self, name, bf16, part):
         if(bf16):
-            return tf.variable_scope(name, partitioner=part, reuse=tf.AUTO_REUSE).keep_weights()
+            return tf.variable_scope(name, partitioner=part, reuse=tf.AUTO_REUSE).keep_weights(dtype=tf.float32)
         else:
             return tf.variable_scope(name, partitioner=part, reuse=tf.AUTO_REUSE)
 
@@ -342,7 +342,7 @@ def build_model_input(filename, batch_size, num_epochs):
     dataset = dataset.repeat(num_epochs)
     dataset = dataset.batch(batch_size)
     dataset = dataset.map(parse_csv, num_parallel_calls=28)
-    dataset = dataset.prefetch(32)
+    dataset = dataset.prefetch(2)
     return dataset
 
 # generate feature columns
@@ -691,7 +691,7 @@ def get_arg_parser():
     parser.add_argument('--steps',
                         help='set the number of steps on train dataset',
                         type=int,
-                        default=0)
+                        default=3000) # default steps 3000 to match model_benchmark
     parser.add_argument('--batch_size',
                         help='Batch size to train',
                         type=int,
