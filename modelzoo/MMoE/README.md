@@ -89,24 +89,41 @@ model:                     ┌────┴────┐                    
     python train.py --bf16
     ```
     Use arguments to set up a custom configuation:
-    - `--seed`: Random seed. Default is `2021`.
-    - `--data_location`: Full path of train & eval data. Default is `./data`.
-    - `--steps`: Set the number of steps on train dataset. When default(`0`) is used, the number of steps is computed based on dataset size and number of epochs equaled 10.
-    - `--batch_size`: Batch size to train. Default is `512`.
-    - `--output_dir`: Full path to output directory for logs and saved model. Default is `./result`.
-    - `--checkpoint_dir`: Full path to checkpoints output directory. Default is `$(OUTPUT_DIR)/model_$(MODEL_NAME)_$(TIMESTAMP)`
-    - `--learning_rate`: Learning rate for network. Default is `0.1`.
-    - `--l2_regularization`: L2 regularization for the model. Default is `None`.
-    - `--timeline`: Save steps of profile hooks to record timeline, zero to close, defualt to `None`.
-    - `--save_steps`: Set the number of steps on saving checkpoints, zero to close. Default will be set to `None`.
-    - `--keep_checkpoint_max`: Maximum number of recent checkpoint to keep. Default is `1`.
-    - `--bf16`: Enable DeepRec BF16 feature in DeepRec. Use FP32 by default.
-    - `--no_eval`: Do not evaluate trained model by eval dataset. Evaluating model by default.
-    - `--protocol`: Set the protocol("grpc", "grpc++", "star_server") used when starting server in distributed training. Default is `grpc`.
-    - `--inter`: Set inter op parallelism threads. Default is `0`.
-    - `--intra`: Set intra op parallelism threads. Default is `0`.
-    - `--input_layer_partitioner`: Slice size of input layer partitioner(units MB). Default is `0`.
-    - `--dense_layer_partitioner`: Slice size of dense layer partitioner(units kB). Default is `0`.
+    - DeepRec Features:
+      - `export START_STATISTIC_STEP` and `export STOP_STATISTIC_STEP`: Set ENV to configure CPU memory optimization. This is already set to `100` & `110` in the code by default.
+      - `--bf16`: Enable DeepRec BF16 feature in DeepRec. Use FP32 by default.
+      - `--emb_fusion`: Whether to enable embedding fusion, Default is `True`.
+      - `--op_fusion`: Whether to enable Auto graph fusion feature. Default is `True`.
+      - `--optimizer`: Choose the optimizer for deep model from ['adam', 'adamasync', 'adagraddecay', 'adagrad', 'gradientdescent']. Use `adagrad` by default.
+      - `--smartstaged`: Whether to enable SmartStaged feature of DeepRec, Default is `True`.
+      - `--micro_batch`: Set num for Auto Micro Batch. Default is `0`. (Not really enabled)
+      - `--ev`: Whether to enable DeepRec EmbeddingVariable. Default is `False`.
+      - `--adaptive_emb`: Whether to enable Adaptive Embedding. Default is `False`.
+      - `--ev_elimination`: Set Feature Elimination of EmbeddingVariable Feature. Options: [None, 'l2', 'gstep'], default is `None`.
+      - `--ev_filter`: Set Feature Filter of EmbeddingVariable Feature. Options: [None, 'counter', 'cbf'], default to `None`.
+      - `--dynamic_ev`: Whether to enable Dynamic-dimension Embedding Variable. Default is `False`. (Not really enabled)
+      - `--multihash`: Whether to enable Multi-Hash Variable. Default is `False`. (Not really enabled)
+      - `--incremental_ckpt`: Set time of save Incremental Checkpoint. Default is `0`.
+      - `--workqueue`: Whether to enable WorkQueue. Default is `False`.
+    - Basic Settings:
+      - `--data_location`: Full path of train & eval data. Default is `./data`.
+      - `--steps`: Set the number of steps on train dataset. When default(`0`) is used, the number of steps is computed based on dataset size and number of epochs equals 1000.
+      - `--no_eval`: Do not evaluate trained model by eval dataset.
+      - `--batch_size`: Batch size to train. Default is `512`.
+      - `--output_dir`: Full path to output directory for logs and saved model. Default is `./result`.
+      - `--checkpoint`: Full path to checkpoints output directory. Default is `$(OUTPUT_DIR)/model_$(MODEL_NAME)_$(TIMESTAMP)`
+      - `--save_steps`: Set the number of steps on saving checkpoints, zero to close. Default will be set to `None`.
+      - `--seed`: Random seed. Default is `2021`.
+      - `--timeline`: Save steps of profile hooks to record timeline, zero to close. Default is `None`.
+      - `--keep_checkpoint_max`: Maximum number of recent checkpoint to keep. Default is `1`.
+      - `--learning_rate`: Learning rate for network. Default is `0.1`.
+      - `--l2_regularization`: L2 regularization for the model. Default is `None`.
+      - `--protocol`: Set the protocol('grpc', 'grpc++', 'star_server') used when starting server in distributed training. Default is `grpc`.
+      - `--inter`: Set inter op parallelism threads. Default is `0`.
+      - `--intra`: Set intra op parallelism threads. Default is `0`.
+      - `--input_layer_partitioner`: Slice size of input layer partitioner(units MB). Default is `0`.
+      - `--dense_layer_partitioner`: Slice size of dense layer partitioner(units kB). Default is `0`.
+      - `--tf`: Use TF 1.15.5 API and disable all DeepRec features.
 
 
 ### Distribute Training
@@ -151,23 +168,23 @@ The benchmark is performed on the [Alibaba Cloud ECS general purpose instance fa
         <td rowspan="3">MMOE</td>
         <td>Community TensorFlow</td>
         <td>FP32</td>
-        <td>0.97378</td>
-        <td>0.74330</td>
-        <td>70.4714 (baseline)</td>
+        <td></td>
+        <td></td>
+        <td></td>
     </tr>
     <tr>
         <td>DeepRec w/ oneDNN</td>
         <td>FP32</td>
-        <td>0.97378</td>
-        <td>0.74426</td>
-        <td>92.1696 (+1.30x)</td>
+        <td></td>
+        <td></td>
+        <td></td>
     </tr>
     <tr>
         <td>DeepRec w/ oneDNN</td>
         <td>FP32+BF16</td>
-        <td>0.97378</td>
-        <td>0.74607</td>
-        <td>102.4703 (+1.45x)</td>
+        <td></td>
+        <td></td>
+        <td></td>
     </tr>
 </table>
 
