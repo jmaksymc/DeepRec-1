@@ -5,7 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import json
-import os 
+import os
 import sys
 import subprocess as sp
 
@@ -40,9 +40,9 @@ def gen_cluster_info(workspace):
   #endpoint_map_path = os.path.join(workspace, ".endpoint_map")
   endpoint_map_path = "/tmp/.endpoint_map"
   with open(endpoint_map_path, 'w') as fout:
-    for node in node_list:
-      host = node[0:node.index(':')]
-      fout.write(node + "=" + host + ":" + DEFAULT_SEASTAR_PORT + "\n")
+   for node in node_list:
+     host = node[0:node.index(':')]
+     fout.write(node + "=" + host + ":" + DEFAULT_SEASTAR_PORT + "\n")
   os.system("ls -ltr /tmp/.endpoint_map")
 
   task = tf_config.get("task", {})
@@ -75,25 +75,33 @@ def set_jemalloc_version(workspace):
   elif "max" == strategy:
     cmd_str = "export JEMALLOC_VERSION=" + os.path.join(workspace, JEMALLOC_251) + ";"
     cmd_str += "export MALLOC_CONF=background_thread:true,metadata_thp:auto,dirty_decay_ms:240000,muzzy_decay_ms:240000;"
+  elif "244" == strategy:
+    cmd_str = "export JEMALLOC_VERSION=" + os.path.join(workspace, JEMALLOC_244) + ";"
+  elif "251" == strategy:
+    cmd_str = "export JEMALLOC_VERSION=" + os.path.join(workspace, JEMALLOC_251) + ";"
+    cmd_str += "export MALLOC_CONF=background_thread:true,metadata_thp:auto,dirty_decay_ms:60000,muzzy_decay_ms:60000;"
+  elif "close" == strategy:
+    pass
   else:
     cmd_str = "export JEMALLOC_VERSION=" + os.path.join(workspace, JEMALLOC_251) + ";"
     cmd_str += "export MALLOC_CONF=background_thread:true,metadata_thp:auto,dirty_decay_ms:240000,muzzy_decay_ms:240000;"
-  
+
   return cmd_str
 
 def pip_install_requirements(workspace):
   requirements_path = os.path.join(workspace, "requirements.txt")
   if not os.path.exists(requirements_path):
     return 0
-  
+
   cmd_str = "$(which pip) install -r " + requirements_path
   print("try to install requirements.txt from " + requirements_path)
   return sp.call(cmd_str, shell=True)
 
 def run_tensorflow_job(workspace, tf_script, tf_args, tf_envs, set_jemalloc_version_cmd):
   cmd_str = "cd " + workspace + ";"
-  #cmd_str += set_jemalloc_version_cmd 
-  #cmd_str += "LD_PRELOAD=${JEMALLOC_VERSION} " 
+  if set_jemalloc_version_cmd:
+    cmd_str += set_jemalloc_version_cmd
+    cmd_str += "LD_PRELOAD=${JEMALLOC_VERSION} "
   cmd_str += " ".join(tf_envs) + " $(which python) -u "
   cmd_str += tf_script + " " + " ".join(tf_args)
   print("run tensorflow command:", cmd_str)
@@ -141,25 +149,29 @@ if __name__ == "__main__":
     exit(1)
   tf_script = os.environ.get("TF_SCRIPT", "")
 
+  if "JEMALLOC_PATH" not in os.environ:
+    jemalloc_path = workspace
+  else:
+    jemalloc_path = os.environ.get("JEMALLOC_PATH", "")
+
+
   #ret_code = copy_python_binary(workspace)
   #if (ret_code != 0):
   #  exit(ret_code)
 
-  tf_args = sys.argv[1:] 
+  tf_args = sys.argv[1:]
 
   tf_envs = []
   #tf_envs.append("TF_SEASTAR_ENDPOINT_MAP_PATH=/tmp/")
   if "TF_CONFIG" in os.environ:
     ps_hosts, worker_hosts, chief_hosts, job_name, task_index = gen_cluster_info(workspace)
-    #tf_envs.extend(set_mkl_envs(job_name))
-    #tf_args.append("--ps_hosts=" + ",".join(ps_hosts))
-    #tf_args.append("--worker_hosts=" + ",".join(worker_hosts))
-    #tf_args.append("--chief_hosts=" + ",".join(chief_hosts))
-    #tf_args.append("--job_name=" + job_name)
-    #tf_args.append("--task_index=" + str(task_index))
 
-  set_jemalloc_version_cmd = set_jemalloc_version(workspace)
-  
+    os.environ["TASK_INDEX"] = str(task_index)
+    os.environ["JOB_NAME"] = str(job_name)
+    #tf_envs.extend(set_mkl_envs(job_name))
+
+  set_jemalloc_version_cmd = set_jemalloc_version(jemalloc_path)
+
   ret_code = pip_install_requirements(workspace)
   if (ret_code != 0):
     exit(ret_code)
