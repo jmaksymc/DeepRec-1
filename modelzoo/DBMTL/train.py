@@ -104,7 +104,6 @@ class DBMTL():
                  bottom_dnn,
                  towers,
                  relation_dnn,
-                #  l2_scale,
                  optimizer_type='adam',
                  learning_rate=0.1,
                  bf16=False,
@@ -121,7 +120,6 @@ class DBMTL():
         self._bottom_dnn = bottom_dnn
         self._towers = towers
         self._relation_dnn = relation_dnn
-        # self.__l2_regularization = self._l2_regularizer(l2_scale) if l2_scale else None
 
         self._learning_rate = learning_rate
         self.tf = stock_tf
@@ -191,7 +189,6 @@ class DBMTL():
                         shared_features = tf.layers.dense(shared_features,
                                                         units=num_hidden_units,
                                                         activation=None,
-                                                        # kernel_regularizer=self.__l2_regularization,
                                                         name=f'{shared_layer_scope.name}/dense')
                         shared_features = DNN_ACTIVATION(shared_features, shared_layer_scope.name)
                         self._add_layer_summary(shared_features, shared_layer_scope.name)
@@ -212,7 +209,6 @@ class DBMTL():
                     with self._make_scope(f'{tower_name}_layer_{layer_id}', self.bf16, self._dense_layer_partitioner) as tower_layer_scope:
                         specific_features = tf.layers.dense(specific_features,
                                                         units=num_hidden_units,
-                                                        # kernel_regularizer=self.__l2_regularization,
                                                         name=f'{tower_layer_scope.name}/dense')
                         specific_features = DNN_ACTIVATION(specific_features,
                                                         name=f'{tower_layer_scope.name}/act')
@@ -231,7 +227,6 @@ class DBMTL():
                     with self._make_scope(f'{tower_name}_relation_dnn_{layer_id}', self.bf16, self._dense_layer_partitioner) as relation_dnn_scope:                      
                         relation_input = tf.layers.dense(relation_input,
                                                         units=num_hidden_units,
-                                                        # kernel_regularizer=self.__l2_regularization,
                                                         name=f'{relation_dnn_scope.name}/dense')
                         relation_input = DNN_ACTIVATION(relation_input,
                                                         name=f'{relation_dnn_scope.name}/act')
@@ -240,7 +235,6 @@ class DBMTL():
                         final_tower_predict = tf.layers.dense(relation_input,
                                                             units=1,
                                                             activation=None,
-                                                            # kernel_regularizer=self.__l2_regularization,
                                                             name=f'{tower_name}_output')
                         self._add_layer_summary(final_tower_predict, f'{tower_name}_output')
                         
@@ -427,53 +421,6 @@ def build_feature_cols():
         elif column_name in IDENTITY_INPUTS:
             column = tf.feature_column.categorical_column_with_identity(column_name, 50)
 
-            # if not args.tf:
-            #     '''Feature Elimination of EmbeddingVariable Feature'''
-            #     if args.ev_elimination == 'gstep':
-            #         # Feature elimination based on global steps
-            #         evict_opt = tf.GlobalStepEvict(steps_to_live=4000)
-            #     elif args.ev_elimination == 'l2':
-            #         # Feature elimination based on l2 weight
-            #         evict_opt = tf.L2WeightEvict(l2_weigt_threshold=1.0)
-            #     else:
-            #         evict_opt = None
-            #     '''Feature Filter of EmbeddingVariable Feature'''
-            #     if args.ev_filter == 'cbf':
-            #         # CBF-based feature filter
-            #         filter_option = tf.CBFFilter(
-            #             filter_freq=3,
-            #             max_element_size=2**30,
-            #             false_positive_probability=0.01,
-            #             counter_type=tf.int64)
-            #     elif args.ev_filter == 'counter':
-            #         # Counter-based feature filter
-            #         filter_option = tf.CounterFilter(filter_freq=3)
-            #     else:
-            #         filter_option = None
-            #     ev_opt = tf.EmbeddingVariableOption(
-            #         evict_option=evict_opt, filter_option=filter_option)
-
-            #     if args.ev:
-            #         '''Embedding Variable Feature'''
-            #         column = tf.feature_column.categorical_column_with_embedding(
-            #             column_name, dtype=tf.string, ev_option=ev_opt)
-            #     elif args.adaptive_emb:
-            #         '''                 Adaptive Embedding Feature Part 2 of 2
-            #         Expcet the follow code, a dict, 'adaptive_mask_tensors', is need as the input of 
-            #         'tf.feature_column.input_layer(adaptive_mask_tensors=adaptive_mask_tensors)'.
-            #         For column 'COL_NAME',the value of adaptive_mask_tensors['$COL_NAME'] is a int32
-            #         tensor with shape [batch_size].
-            #         '''
-            #         column = tf.feature_column.categorical_column_with_adaptive_embedding(
-            #             column_name,
-            #             hash_bucket_size=HASH_BUCKET_SIZES[column_name],
-            #             dtype=tf.string,
-            #             ev_option=ev_opt)
-            #     elif args.dynamic_ev:
-            #         '''Dynamic-dimension Embedding Variable'''
-            #         print("Dynamin-dimension Embedding Variable isn't really enabled in model.")
-            #         sys.exit()
-
             if args.tf or not args.emb_fusion:
                 embedding_column = tf.feature_column.embedding_column(
                     column, 
@@ -577,8 +524,8 @@ def eval(sess_config, input_hooks, model, data_init_op, steps, checkpoint_dir):
 def main(tf_config=None, server=None):
     # check dataset and count data set size
     print("Checking dataset...")
-    train_file = os.path.join(args.data_location, 'train')
-    test_file = os.path.join(args.data_location, 'eval')
+    train_file = os.path.join(args.data_location, 'taobao_train_data')
+    test_file = os.path.join(args.data_location, 'taobao_test_data')
 
     if (not os.path.exists(train_file)) or (not os.path.exists(test_file)):
         print("Dataset does not exist in the given data_location.")
